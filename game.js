@@ -9,7 +9,7 @@ const levels = {
     insane: { speed: 7, obstacles: 20, difficulty: 'insane' },
 };
 
-let player = { x: 50, y: 350, width: 50, height: 50, jump: false, velocity: 0, type: 'normal' };
+let player = { x: 50, y: 350, width: 50, height: 50, jump: false, velocity: 0, gravity: 0.6, jumpHeight: -12, ground: 350 };
 let obstacles = [];
 let score = 0;
 let safeBlocks = [];
@@ -28,26 +28,27 @@ function initializeGame(level) {
     canvas.width = window.innerWidth;
     canvas.height = 400;
 
-    player = { x: 50, y: 350, width: 50, height: 50, jump: false, velocity: 0, type: 'normal' };
+    player = { x: 50, y: player.ground, width: 50, height: 50, jump: false, velocity: 0, gravity: 0.6, jumpHeight: -12, ground: 350 };
     obstacles = [];
     score = 0;
     safeBlocks = [];
 
-    // Reset canvas on each start
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // Update player position
         if (player.jump) {
-            player.velocity = -8; // Apply jump force
-        } else {
-            player.velocity += 0.5; // gravity (controlled for smooth landing)
+            player.velocity = player.jumpHeight; // Apply the jump force
         }
 
-        player.y += player.velocity;
-        if (player.y > 350) { // Prevent the player from going below the floor
-            player.y = 350;
-            player.velocity = 0;
+        player.velocity += player.gravity; // Apply gravity
+        player.y += player.velocity; // Move the player based on velocity
+
+        // Prevent the player from going below the ground
+        if (player.y > player.ground) {
+            player.y = player.ground; // Set player back to ground level
+            player.velocity = 0; // Stop the falling motion
+            player.jump = false; // Allow the next jump
         }
 
         // Draw player based on type (normal, rocket, ninjaStar)
@@ -116,9 +117,9 @@ function initializeGame(level) {
     }
 
     function jump() {
-        if (player.y === 350) {
+        if (!player.jump) { // Only allow jump if on the ground
             player.jump = true;
-            player.velocity = -8; // Force for the jump
+            player.velocity = player.jumpHeight; // Apply jump force
         }
     }
 
@@ -186,4 +187,5 @@ document.addEventListener('keydown', (e) => {
         jump();
     }
 });
+
 
